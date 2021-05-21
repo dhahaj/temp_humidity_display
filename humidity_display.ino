@@ -67,7 +67,8 @@ void loop()
   {
     // disable interrupt to avoid new data corrupting the buffer
     detachInterrupt(1);
-
+    humidity = 0;
+    temp = 0;
     // extract humidity value
     //unsigned long humidity;
     unsigned int startIndex, stopIndex;
