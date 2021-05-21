@@ -47,6 +47,7 @@ void setup(void)
   seg.begin();
   Wire.setClock(100000);
   seg.displayOn();
+  seg.brightness(15);
   seg.setDigits(4);
   seg.displayColon(0);
   seg.displayTest(1);
@@ -65,6 +66,8 @@ void loop()
 
   if (received == true)
   {
+    seg.displayTest(2);
+    seg.displayClear();
     // disable interrupt to avoid new data corrupting the buffer
     detachInterrupt(1);
     humidity = 0;
@@ -157,7 +160,7 @@ void loop()
 void showValue(float t, float h)
 {
   seg.blink(0);
-  seg.clearCache();
+//  seg.clearCache();
   uint32_t now = millis();
   if (now - lastTime > 3000)
   {
@@ -172,7 +175,7 @@ void showValue(float t, float h)
     }
     flag = !flag;
   }
-  seg.displayColon(0);
+//  seg.displayColon(0);
 }
 
 
