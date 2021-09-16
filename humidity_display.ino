@@ -9,22 +9,22 @@ HT16K33 seg(0x70);
 
 // ring buffer size has to be large enough to fit
 // data between two successive sync signals
-#define RING_BUFFER_SIZE  256
+#define RING_BUFFER_SIZE 256
 
 #define SYNC_LENGTH 2200
 
-#define SYNC_HIGH  600
-#define SYNC_LOW   600
-#define BIT1_HIGH  400
-#define BIT1_LOW   220
-#define BIT0_HIGH  220
-#define BIT0_LOW   400
+#define SYNC_HIGH 600
+#define SYNC_LOW 600
+#define BIT1_HIGH 400
+#define BIT1_LOW 220
+#define BIT0_HIGH 220
+#define BIT0_LOW 400
 
-#define DATAPIN  3  // D3 is interrupt 1
+#define DATAPIN 3 // D3 is interrupt 1
 
 unsigned long timings[RING_BUFFER_SIZE];
-unsigned int syncIndex1 = 0,  // index of the first sync signal
-             syncIndex2 = 0;  // index of the second sync signal
+unsigned int syncIndex1 = 0, // index of the first sync signal
+    syncIndex2 = 0;          // index of the second sync signal
 bool received = false;
 uint32_t lastTime = 0;
 bool flag = true;
@@ -77,7 +77,7 @@ void loop()
     unsigned int startIndex, stopIndex;
     bool fail = false;
     startIndex = (syncIndex1 + (3 * 8 + 1) * 2) % RING_BUFFER_SIZE;
-    stopIndex =  (syncIndex1 + (3 * 8 + 8) * 2) % RING_BUFFER_SIZE;
+    stopIndex = (syncIndex1 + (3 * 8 + 8) * 2) % RING_BUFFER_SIZE;
 
     for (int i = startIndex; i != stopIndex; i = (i + 2) % RING_BUFFER_SIZE)
     {
@@ -89,7 +89,8 @@ void loop()
 
     if (fail)
       Serial.println(F("Decoding error."));
-    else {
+    else
+    {
       Serial.print(F("Humidity: "));
       Serial.print(humidity);
       Serial.print("\% / ");
@@ -100,17 +101,18 @@ void loop()
 
     // most significant 4 bits
     startIndex = (syncIndex1 + (4 * 8 + 4) * 2) % RING_BUFFER_SIZE;
-    stopIndex  = (syncIndex1 + (4 * 8 + 8) * 2) % RING_BUFFER_SIZE;
+    stopIndex = (syncIndex1 + (4 * 8 + 8) * 2) % RING_BUFFER_SIZE;
     for (int i = startIndex; i != stopIndex; i = (i + 2) % RING_BUFFER_SIZE)
     {
       int bit = t2b(timings[i], timings[(i + 1) % RING_BUFFER_SIZE]);
       temp = (temp << 1) + bit;
-      if (bit < 0)  fail = true;
+      if (bit < 0)
+        fail = true;
     }
 
     // least significant 7 bits
     startIndex = (syncIndex1 + (5 * 8 + 1) * 2) % RING_BUFFER_SIZE;
-    stopIndex  = (syncIndex1 + (5 * 8 + 8) * 2) % RING_BUFFER_SIZE;
+    stopIndex = (syncIndex1 + (5 * 8 + 8) * 2) % RING_BUFFER_SIZE;
     for (int i = startIndex; i != stopIndex; i = (i + 2) % RING_BUFFER_SIZE)
     {
       int bit = t2b(timings[i], timings[(i + 1) % RING_BUFFER_SIZE]);
@@ -125,10 +127,10 @@ void loop()
     {
       Serial.print(F("Temperature: "));
       Serial.print((int)((temp - 1024) / 10 + 1.9 + 0.5)); // round to the nearest integer
-      Serial.write(176);    // degree symbol
+      Serial.write(176);                                   // degree symbol
       Serial.print(F("C/"));
       Serial.print((int)(((temp - 1024) / 10 + 1.9 + 0.5) * 9 / 5 + 32)); // convert to F
-      Serial.write(176);    // degree symbol
+      Serial.write(176);                                                  // degree symbol
       Serial.println(F("F"));
     }
 
@@ -154,13 +156,12 @@ void loop()
   //      seg.displayVURight(j);
   //    }
   //  }
-
 }
 
 void showValue(float t, float h)
 {
   seg.blink(0);
-//  seg.clearCache();
+  //  seg.clearCache();
   uint32_t now = millis();
   if (now - lastTime > 3000)
   {
@@ -175,9 +176,8 @@ void showValue(float t, float h)
     }
     flag = !flag;
   }
-//  seg.displayColon(0);
+  //  seg.displayColon(0);
 }
-
 
 // detect if a sync signal is present
 bool isSync(unsigned int idx)
@@ -188,7 +188,7 @@ bool isSync(unsigned int idx)
   {
     unsigned long t1 = timings[(idx + RING_BUFFER_SIZE - i) % RING_BUFFER_SIZE];
     unsigned long t0 = timings[(idx + RING_BUFFER_SIZE - i - 1) % RING_BUFFER_SIZE];
-    if (t0 < (SYNC_HIGH - 100) || t0 > (SYNC_HIGH + 100) || t1 < (SYNC_LOW - 100)  || t1 > (SYNC_LOW + 100))
+    if (t0 < (SYNC_HIGH - 100) || t0 > (SYNC_HIGH + 100) || t1 < (SYNC_LOW - 100) || t1 > (SYNC_LOW + 100))
       return false;
   }
 
@@ -225,7 +225,7 @@ void handler(void)
   // detect sync signal
   if (isSync(ringIndex))
   {
-    syncCount ++;
+    syncCount++;
     // first time sync is seen, record buffer index
     if (syncCount == 1)
       syncIndex1 = (ringIndex + 1) % RING_BUFFER_SIZE;
@@ -236,16 +236,17 @@ void handler(void)
       syncIndex2 = (ringIndex + 1) % RING_BUFFER_SIZE;
       unsigned int changeCount = (syncIndex2 < syncIndex1) ? (syncIndex2 + RING_BUFFER_SIZE - syncIndex1) : (syncIndex2 - syncIndex1);
       // changeCount must be 122 -- 60 bits x 2 + 2 for sync
-      if (changeCount != 122) {
+      if (changeCount != 122)
+      {
         received = false;
         syncIndex1 = 0;
         syncIndex2 = 0;
       }
-      else received = true;
+      else
+        received = true;
     }
   }
 } // HANDLER
-
 
 int t2b(unsigned int t0, unsigned int t1)
 {
@@ -253,5 +254,5 @@ int t2b(unsigned int t0, unsigned int t1)
     return 1;
   else if (t0 > (BIT0_HIGH - 100) && t0 < (BIT0_HIGH + 100) && t1 > (BIT0_LOW - 100) && t1 < (BIT0_LOW + 100))
     return 0;
-  return -1;  // undefined
+  return -1; // undefined
 }
